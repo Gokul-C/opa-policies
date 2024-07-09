@@ -1,0 +1,28 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdenyhostport
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDenyHostPort
+      validation:
+        openAPIV3Schema:
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdenyhostport
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.template.spec.containers[_].ports[_].hostPort
+          msg := "Container with hostPort is not allowed"
+        }
+
+        # Check for Pod directly (not through a controller like Deployment)
+        violation[{"msg": msg}] {
+          input.review.object.kind == "Pod"
+          input.review.object.spec.containers[_].ports[_].hostPort
+          msg := "Container with hostPort is not allowed"
+        }

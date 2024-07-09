@@ -1,0 +1,15 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sDenyHostPrivileges
+metadata:
+  name: deny-host-privileges
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+  parameters:
+    denyHostNetwork: true
+    denyHostPID: true
+    denyHostIPC: true

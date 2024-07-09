@@ -1,0 +1,38 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdenyprivilegedcontainers
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDenyPrivilegedContainers
+      validation:
+        openAPIV3Schema:
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdenyprivilegedcontainers
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.containers[_].securityContext.privileged == true
+          msg := "Containers must not run as privileged."
+        }
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.initContainers[_].securityContext.privileged == true
+          msg := "InitContainers must not run as privileged."
+        }
+
+        # Check for Pod template in Deployment
+        violation[{"msg": msg}] {
+          input.review.object.spec.template.spec.containers[_].securityContext.privileged == true
+          msg := "Containers must not run as privileged."
+        }
+
+        # Check for InitContainers in Pod template in Deployment
+        violation[{"msg": msg}] {
+          input.review.object.spec.template.spec.initContainers[_].securityContext.privileged == true
+          msg := "InitContainers must not run as privileged."
+        }

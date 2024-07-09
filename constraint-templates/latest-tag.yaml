@@ -1,0 +1,36 @@
+
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdenylatesttag
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDenyLatestTag
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdenylatesttag
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Pod"
+          containers := input.review.object.spec.containers[_]
+          endswith(containers.image, ":latest")
+          msg := sprintf("The use of 'latest' tag in image %v is not allowed.", [containers.image])
+        }
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "Deployment"
+          containers := input.review.object.spec.template.spec.containers[_]
+          endswith(containers.image, ":latest")
+          msg := sprintf("The use of 'latest' tag in image %v is not allowed.", [containers.image])
+        }
+
+        violation[{"msg": msg}] {
+          input.review.kind.kind == "ReplicaSet"
+          containers := input.review.object.spec.template.spec.containers[_]
+          endswith(containers.image, ":latest")
+          msg := sprintf("The use of 'latest' tag in image %v is not allowed.", [containers.image])
+        }
+

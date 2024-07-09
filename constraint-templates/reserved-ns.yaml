@@ -1,0 +1,24 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sreservednamespaces
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sReservedNamespaces
+      validation:
+        openAPIV3Schema:
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sreservednamespaces
+
+        reserved_namespaces = ["default", "openshift-*"]
+
+        violation[{"msg": msg}] {
+          namespace := input.review.namespace
+          namespace == reserved_namespaces[_]
+          msg := sprintf("Deployment in namespace %q is not allowed.", [namespace])
+        }

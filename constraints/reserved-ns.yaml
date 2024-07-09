@@ -1,0 +1,11 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sReservedNamespaces
+metadata:
+  name: deny-reserved-namespaces
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod", "Deployment", "Service", "ConfigMap", "Secret", "Ingress", "Job"]  # Add more kinds as needed
+    excludedNamespaces:
+      - "gatekeeper-system"  # Exclude gatekeeper-system namespace if Gatekeeper is installed there

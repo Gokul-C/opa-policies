@@ -1,0 +1,62 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sdenyhostprivileges
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sDenyHostPrivileges
+      validation:
+        openAPIV3Schema:
+          properties:
+            denyHostNetwork:
+              type: boolean
+            denyHostPID:
+              type: boolean
+            denyHostIPC:
+              type: boolean
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sdenyhostprivileges
+
+        violation[{"msg": msg}] {
+          input.parameters.denyHostNetwork
+          input.review.object.spec.template.spec.hostNetwork == true
+          msg := "HostNetwork is not allowed"
+        }
+
+        violation[{"msg": msg}] {
+          input.parameters.denyHostPID
+          input.review.object.spec.template.spec.hostPID == true
+          msg := "HostPID is not allowed"
+        }
+
+        violation[{"msg": msg}] {
+          input.parameters.denyHostIPC
+          input.review.object.spec.template.spec.hostIPC == true
+          msg := "HostIPC is not allowed"
+        }
+
+        # Check for Pod directly (not through a controller like Deployment)
+        violation[{"msg": msg}] {
+          input.parameters.denyHostNetwork
+          input.review.object.kind == "Pod"
+          input.review.object.spec.hostNetwork == true
+          msg := "HostNetwork is not allowed"
+        }
+
+        violation[{"msg": msg}] {
+          input.parameters.denyHostPID
+          input.review.object.kind == "Pod"
+          input.review.object.spec.hostPID == true
+          msg := "HostPID is not allowed"
+        }
+
+        violation[{"msg": msg}] {
+          input.parameters.denyHostIPC
+          input.review.object.kind == "Pod"
+          input.review.object.spec.hostIPC == true
+          msg := "HostIPC is not allowed"
+        }

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: host-privileges-test-pod
+spec:
+  hostNetwork: true  # Example of a host privilege
+  containers:
+    - name: test-container
+      image: nginx:v1
