@@ -1,0 +1,41 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sprobesrequired
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sProbesRequired
+      validation:
+        openAPIV3Schema:
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sprobesrequired
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.livenessProbe
+          msg := sprintf("Container %q does not have a liveness probe.", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.readinessProbe
+          msg := sprintf("Container %q does not have a readiness probe.", [container.name])
+        }
+
+        # Check for Pod template in Deployment, StatefulSet, DaemonSet, etc.
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.template.spec.containers[_]
+          not container.livenessProbe
+          msg := sprintf("Container %q in Pod template does not have a liveness probe.", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.template.spec.containers[_]
+          not container.readinessProbe
+          msg := sprintf("Container %q in Pod template does not have a readiness probe.", [container.name])
+        }

@@ -22,9 +22,22 @@ spec:
       - name: nginx
         image: nginx:latest
         imagePullPolicy: Always
-        volumeMounts:
-        - name: crio-socket
-          mountPath: /var/run/crio/crio.sock
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 20
+        #volumeMounts:
+        #- name: crio-socket
+        #  mountPath: /var/run/crio/crio.sock
+        #- mountPath: /tmp
+        #  name: cache-volume
         securityContext:
           privileged: true
           runAsUser: 0
@@ -41,3 +54,5 @@ spec:
       - name: crio-socket
         hostPath:
           path: /var/run/crio/crio.sock
+      - name: cache-volume
+        emptyDir: {}  # Missing 'medium: Memory'

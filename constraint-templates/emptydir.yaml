@@ -1,0 +1,45 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sonlytmptmpfs
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sOnlyTmpTmpfs
+      validation:
+        openAPIV3Schema:
+          properties: {}
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8sonlytmptmpfs
+
+        violation[{"msg": msg}] {
+          volume := input.review.object.spec.volumes[_]
+          volume.emptyDir
+          not volume.emptyDir.medium
+          msg := sprintf("EmptyDir volume %q must have medium set to 'Memory' (tmpfs).", [volume.name])
+        }
+
+        violation[{"msg": msg}] {
+          volume := input.review.object.spec.volumes[_]
+          volume.emptyDir
+          volume.emptyDir.medium != "Memory"
+          msg := sprintf("EmptyDir volume %q must have medium set to 'Memory' (tmpfs).", [volume.name])
+        }
+
+        # Check for Pod template in Deployment, StatefulSet, DaemonSet, etc.
+        violation[{"msg": msg}] {
+          volume := input.review.object.spec.template.spec.volumes[_]
+          volume.emptyDir
+          not volume.emptyDir.medium
+          msg := sprintf("EmptyDir volume %q in Pod template must have medium set to 'Memory' (tmpfs).", [volume.name])
+        }
+
+        violation[{"msg": msg}] {
+          volume := input.review.object.spec.template.spec.volumes[_]
+          volume.emptyDir
+          volume.emptyDir.medium != "Memory"
+          msg := sprintf("EmptyDir volume %q in Pod template must have medium set to 'Memory' (tmpfs).", [volume.name])
+        }

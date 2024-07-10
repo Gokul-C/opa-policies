@@ -1,0 +1,33 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: volumeswithoutmounts
+spec:
+  crd:
+    spec:
+      names:
+        kind: VolumesWithoutMounts
+      validation:
+        openAPIV3Schema:
+          properties:
+            allowedNamespaces:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package kubernetes.admission
+
+        deny[msg] {
+          input.review.kind.kind == "Pod"
+          input.review.operation == "CREATE"
+          some v
+          v := input.review.object.spec.volumes[_]
+          not (
+              some vm
+              vm := input.review.object.spec.containers[_].volumeMounts[_]
+              v.name == vm.name
+          )
+          msg := sprintf("Volume '%v' is defined but not mounted in any container", [v.name])
+        }
