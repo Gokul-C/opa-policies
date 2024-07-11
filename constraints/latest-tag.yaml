@@ -11,3 +11,5 @@ spec:
         kinds: ["Deployment"]
       - apiGroups: ["apps"]
         kinds: ["ReplicaSet"]
+      - apiGroups: ["apps.openshift.io"]
+        kinds: ["DeploymentConfig"]

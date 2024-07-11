@@ -8,5 +8,7 @@ spec:
       - apiGroups: [""]
         kinds: ["Pod"] # Add other kinds as needed
       - apiGroups: ["apps"]
-        kinds: ["Deployment"]  
+        kinds: ["Deployment"]
+      - apiGroups: ["apps.openshift.io"]
+        kinds: ["DeploymentConfig"]
     excludedNamespaces: ["kube-system", "gatekeeper-system"]  # Optionally exclude system namespaces
