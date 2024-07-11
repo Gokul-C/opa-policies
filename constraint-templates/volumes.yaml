@@ -1,33 +1,26 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: volumeswithoutmounts
+  name: volumesmusthavevolumemounts
 spec:
   crd:
     spec:
       names:
-        kind: VolumesWithoutMounts
-      validation:
-        openAPIV3Schema:
-          properties:
-            allowedNamespaces:
-              type: array
-              items:
-                type: string
+        kind: VolumesMustHaveVolumeMounts
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
-        package kubernetes.admission
+        package volumes_must_have_volumemounts
 
-        deny[msg] {
-          input.review.kind.kind == "Pod"
-          input.review.operation == "CREATE"
-          some v
-          v := input.review.object.spec.volumes[_]
-          not (
-              some vm
-              vm := input.review.object.spec.containers[_].volumeMounts[_]
-              v.name == vm.name
-          )
-          msg := sprintf("Volume '%v' is defined but not mounted in any container", [v.name])
+        violation[{"msg": msg, "details": {"missingVolumeMounts": missingVolumeMounts}}] {
+          volume := input.review.object.spec.volumes[_]
+          missingVolumeMounts := {volume.name | not volume_mount_defined(volume.name)}
+          count(missingVolumeMounts) > 0
+          msg := sprintf("Volumes have no corresponding volumeMounts: %v", [missingVolumeMounts])
+        }
+
+        volume_mount_defined(volume_name) {
+          container := input.review.object.spec.containers[_]
+          volumeMount := container.volumeMounts[_]
+          volumeMount.name == volume_name
         }

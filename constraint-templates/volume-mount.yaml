@@ -1,0 +1,25 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: volumemountsmusthavevolume
+spec:
+  crd:
+    spec:
+      names:
+        kind: VolumeMountsMustHaveVolume
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package volumemounts_must_have_volume
+
+        violation[{"msg": msg, "details": {"missingVolumeMounts": missingVolumeMounts}}] {
+          container := input.review.object.spec.containers[_]
+          missingVolumeMounts := {mount | mount := container.volumeMounts[_].name; not volume_defined(mount)}
+          count(missingVolumeMounts) > 0
+          msg := sprintf("Containers have volumeMounts without corresponding volumes: %v", [missingVolumeMounts])
+        }
+
+        volume_defined(mount) {
+          volume := input.review.object.spec.volumes[_]
+          volume.name == mount
+        }

@@ -1,7 +1,7 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: VolumesMustHaveVolumeMounts
+kind: VolumeMountsMustHaveVolume
 metadata:
-  name: enforce-volumes-must-have-volumemounts
+  name: enforce-volumemounts-must-have-volume
 spec:
   match:
     kinds:
