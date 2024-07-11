@@ -1,24 +1,35 @@
 apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
-  name: k8sreservednamespaces
+  name: reservednamespace
 spec:
   crd:
     spec:
       names:
-        kind: K8sReservedNamespaces
+        kind: ReservedNamespace
       validation:
-        openAPIV3Schema:
-          properties: {}
+        legacySchema: true
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
-        package k8sreservednamespaces
-
-        reserved_namespaces = ["default", "openshift-*"]
+        package reservednamespace
 
         violation[{"msg": msg}] {
-          namespace := input.review.namespace
-          namespace == reserved_namespaces[_]
-          msg := sprintf("Deployment in namespace %q is not allowed.", [namespace])
+          reserved_namespaces := {"default"}
+          ns := input.review.object.metadata.namespace
+
+          reserved_namespaces[ns]
+          msg := sprintf("Resource creation is not allowed in reserved namespaces: %v", [ns])
+        }
+
+        violation[{"msg": msg}] {
+          prefix := "openshift-"
+          namespace := input.review.object.metadata.namespace
+
+          starts_with(namespace, prefix)
+          msg := sprintf("Resource creation is not allowed in namespaces starting with 'openshift-': %v", [namespace])
+        }
+
+        starts_with(namespace, prefix) {
+          startswith(namespace, prefix)
         }
