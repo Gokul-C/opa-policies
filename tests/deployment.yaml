@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-host-privileges
-  namespace: default
+  #namespace: default
   labels:
     app: test-host-privileges
 spec:

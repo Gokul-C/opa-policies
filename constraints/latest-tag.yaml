@@ -13,3 +13,6 @@ spec:
         kinds: ["ReplicaSet"]
       - apiGroups: ["apps.openshift.io"]
         kinds: ["DeploymentConfig"]
+    excludedNamespaces:
+      - "default"
+      - "openshift-*"

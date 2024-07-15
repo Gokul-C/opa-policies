@@ -11,3 +11,6 @@ spec:
         kinds: ["Deployment", "StatefulSet", "DaemonSet"]
       - apiGroups: ["apps.openshift.io"]
         kinds: ["DeploymentConfig"]
+    excludedNamespaces:
+      - "default"
+      - "openshift-*"

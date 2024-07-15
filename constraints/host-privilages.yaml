@@ -11,6 +11,9 @@ spec:
         kinds: ["Deployment"]
       - apiGroups: ["apps.openshift.io"]
         kinds: ["DeploymentConfig"]
+    excludedNamespaces:
+      - "default"
+      - "openshift-*"
   parameters:
     denyHostNetwork: true
     denyHostPID: true

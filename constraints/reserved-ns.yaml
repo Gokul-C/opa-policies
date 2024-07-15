@@ -11,4 +11,6 @@ spec:
         kinds: ["Deployment"]
       - apiGroups: ["apps.openshift.io"]
         kinds: ["DeploymentConfig"]
-    excludedNamespaces: ["kube-system", "gatekeeper-system"]  # Optionally exclude system namespaces
+    excludedNamespaces:
+      - "default"
+      - "openshift-*"
